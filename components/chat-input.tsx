@@ -9,9 +9,21 @@ import {
 } from "./ui/input-group";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
-import { sendMessage } from "@/services/supabase/actions/messages";
+import { Message, sendMessage } from "@/services/supabase/actions/messages";
 
-export function ChatInput({ roomId }: { roomId: string }) {
+type Props = {
+  roomId: string;
+  onSend: (message: { id: string; text: string }) => void;
+  onSuccessfulSend: (message: Message) => void;
+  onErrorSend: (id: string) => void;
+};
+
+export function ChatInput({
+  roomId,
+  onSend,
+  onSuccessfulSend,
+  onErrorSend,
+}: Props) {
   const [message, setMessage] = useState("");
 
   async function handleSubmit(e?: FormEvent) {
@@ -20,14 +32,18 @@ export function ChatInput({ roomId }: { roomId: string }) {
     if (!text) return;
 
     setMessage("");
-    const result = await sendMessage({ text: message, roomId });
+    const id = crypto.randomUUID();
+    onSend({ id, text });
+    const result = await sendMessage({ id, text, roomId });
     if (result.error) {
       toast.error(result.message);
+      onErrorSend(id);
     } else {
+      onSuccessfulSend(result.message);
     }
   }
   return (
-    <form className="p-3">
+    <form className="p-3" onSubmit={handleSubmit}>
       <InputGroup>
         <InputGroupTextarea
           placeholder="Type your message..."

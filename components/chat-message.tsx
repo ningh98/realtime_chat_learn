@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Message } from "@/services/supabase/actions/messages";
 import { User2Icon } from "lucide-react";
 import Image from "next/image";
@@ -7,9 +8,19 @@ const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
   timeStyle: "short",
 });
 
-export function ChatMessage({ text, author, created_at }: Message) {
+export function ChatMessage({
+  text,
+  author,
+  created_at,
+  status,
+}: Message & { status?: "pending" | "error" | "success" }) {
   return (
-    <div className="flex gap-4 px-4 py-2 hover:bg-accent/50">
+    <div
+      className={cn("flex gap-4 px-4 py-2 hover:bg-accent/50", {
+        "opacity-70": status === "pending",
+        "bg-destructive/10 text-destructive": status === "error",
+      })}
+    >
       <div className="shrink-0">
         {author.image_url != null ? (
           <Image

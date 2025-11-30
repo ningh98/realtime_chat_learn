@@ -2,6 +2,7 @@
 
 import { ChatInput } from "@/components/chat-input";
 import { ChatMessage } from "@/components/chat-message";
+import { InviteUserModal } from "@/components/invite-user-modal";
 import { Message } from "@/services/supabase/actions/messages";
 import { createClient } from "@/services/supabase/client";
 import { RealtimeChannel } from "@supabase/supabase-js";
@@ -39,13 +40,13 @@ export function RoomClient({
 
   return (
     <div className="container mx-auto h-screen-with-header border border-y-0 flex flex-col">
-      <div className="flex items-center justify-between gap-2">
-        <div className="p-4 border-b">
+      <div className="flex items-center justify-between gap-2 p-4 ">
+        <div className="border-b">
           <h1 className="text-2xl font-bold">{room.name}</h1>
           <p className="text-muted-foreground text-sm">
             {connectedUsers} {connectedUsers === 1 ? "user" : "users"} online
           </p>
-          <InviteUseerModal roomId={room.id} />
+          <InviteUserModal roomId={room.id} />
         </div>
       </div>
       <div
@@ -94,10 +95,6 @@ export function RoomClient({
       />
     </div>
   );
-}
-
-function InviteUseerModal({ roomId }: { roomId: string }) {
-  return null;
 }
 
 function useRealTimeChat({

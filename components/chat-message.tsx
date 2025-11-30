@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Message } from "@/services/supabase/actions/messages";
 import { User2Icon } from "lucide-react";
 import Image from "next/image";
+import { Ref } from "react";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
   dateStyle: "short",
@@ -13,9 +14,14 @@ export function ChatMessage({
   author,
   created_at,
   status,
-}: Message & { status?: "pending" | "error" | "success" }) {
+  ref,
+}: Message & {
+  status?: "pending" | "error" | "success";
+  ref?: Ref<HTMLDivElement>;
+}) {
   return (
     <div
+      ref={ref}
       className={cn("flex gap-4 px-4 py-2 hover:bg-accent/50", {
         "opacity-70": status === "pending",
         "bg-destructive/10 text-destructive": status === "error",
@@ -43,7 +49,7 @@ export function ChatMessage({
             {DATE_FORMATTER.format(new Date(created_at))}
           </span>
         </div>
-        <p className="text-sm wrap-break-word whitespace-pre">{text}</p>
+        <p className="text-sm wrap-break-words whitespace-pre">{text}</p>
       </div>
     </div>
   );

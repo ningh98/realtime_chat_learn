@@ -1,7 +1,4 @@
 "use client";
-
-import { cn } from "@/lib/utils";
-import { createClient } from "@/services/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,12 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { createClient } from "../client";
 import { useRouter } from "next/navigation";
 
-export function LoginForm({
+export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
@@ -26,15 +25,18 @@ export function LoginForm({
 
   const router = useRouter();
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/oauth?next=/`,
+        },
       });
       if (error) throw error;
       if (data.session) {
@@ -43,50 +45,19 @@ export function LoginForm({
       }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
-      console.error("sign in error", error);
+      console.error("sign up error", error);
       setIsLoading(false);
     }
   };
-
-  const handleSocialLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const supabase = createClient();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/auth/oauth?next=/`,
-        },
-      });
-
-      if (error) throw error;
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Welcome!</CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
+          <CardTitle className="text-2xl">Sign Up</CardTitle>
+          <CardDescription>Create your account to continue</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <form onSubmit={handleSocialLogin}>
-            <div className="flex flex-col gap-6">
-              {error && <p className="text-sm text-destructive-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Continue with GitHub"}
-              </Button>
-            </div>
-          </form>
-          <hr />
-          <form onSubmit={handleEmailLogin}>
+          <form onSubmit={handleEmailSignUp}>
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -104,7 +75,7 @@ export function LoginForm({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              {error && <p className="text-sm text-destructive-500">{error}</p>}
+              {/* {error && <p className="text-sm text-destructive-500">{error}</p>} */}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Continue"}
               </Button>

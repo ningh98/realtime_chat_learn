@@ -12,13 +12,18 @@ const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
 export function ChatMessage({
   text,
   author,
+  author_id,
   created_at,
   status,
   ref,
+  currentUserId,
 }: Message & {
   status?: "pending" | "error" | "success";
   ref?: Ref<HTMLDivElement>;
+  currentUserId?: string;
 }) {
+  const isSelf = author_id === currentUserId;
+
   return (
     <div
       ref={ref}
@@ -44,7 +49,14 @@ export function ChatMessage({
       </div>
       <div className="grow space-y-0.5">
         <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold">{author.name}</span>
+          <span
+            className={cn(
+              "text-sm font-semibold",
+              isSelf && "text-emerald-300"
+            )}
+          >
+            {author.name}
+          </span>
           <span className="text-xs text-muted-foreground">
             {DATE_FORMATTER.format(new Date(created_at))}
           </span>

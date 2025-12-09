@@ -16,6 +16,7 @@ type Props = {
   onSend: (message: { id: string; text: string }) => void;
   onSuccessfulSend: (message: Message) => void;
   onErrorSend: (id: string) => void;
+  onAiRunStarted?: (runId: string, token: string) => void;
 };
 
 export function ChatInput({
@@ -23,6 +24,7 @@ export function ChatInput({
   onSend,
   onSuccessfulSend,
   onErrorSend,
+  onAiRunStarted,
 }: Props) {
   const [message, setMessage] = useState("");
 
@@ -40,6 +42,14 @@ export function ChatInput({
       onErrorSend(id);
     } else {
       onSuccessfulSend(result.message);
+    }
+    if (
+      "aiRunId" in result &&
+      result.aiRunId &&
+      result.aiToken &&
+      onAiRunStarted
+    ) {
+      onAiRunStarted(result.aiRunId, result.aiToken);
     }
   }
   return (

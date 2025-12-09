@@ -8,6 +8,8 @@ import { Message } from "@/services/supabase/actions/messages";
 import { createClient } from "@/services/supabase/client";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
+import { useRealtimeRun } from "@trigger.dev/react-hooks";
+import { Loader2, Sparkles } from "lucide-react";
 
 export function RoomClient({
   room,
@@ -25,6 +27,17 @@ export function RoomClient({
   };
   messages: Message[];
 }) {
+  const [aiRunId, setAiRunId] = useState<
+    { id: string; token: string } | undefined
+  >(undefined);
+  const { run: aiRun } = useRealtimeRun(aiRunId?.id, {
+    accessToken: aiRunId?.token,
+    enabled: !!aiRunId, // Only try to connect if we have state
+  });
+  const isAiThinking =
+    aiRun?.status === "QUEUED" ||
+    aiRun?.status === "EXECUTING" ||
+    aiRun?.status === "WAITING";
   const { connectedUsers, messages: realtimeMessages } = useRealTimeChat({
     roomId: room.id,
     userId: user.id,
@@ -93,8 +106,18 @@ export function RoomClient({
           ))}
         </div>
       </div>
+      {isAiThinking && (
+        <div className="px-4 pb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50/50 p-2 rounded-md border border-blue-100">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <Sparkles className="h-4 w-4" />
+            <span className="font-medium">AI is thinking...</span>
+          </div>
+        </div>
+      )}
       <ChatInput
         roomId={room.id}
+        onAiRunStarted={(runId, token) => setAiRunId({ id: runId, token })}
         onSend={(message) => {
           setSentMessages((prev) => [
             ...prev,
@@ -150,6 +173,7 @@ function useRealTimeChat({
           presence: {
             key: userId,
           },
+          broadcast: { self: true },
         },
       });
 

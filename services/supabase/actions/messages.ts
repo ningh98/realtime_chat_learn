@@ -2,6 +2,7 @@
 
 import { getCurrentUser } from "../lib/getCurrentUser";
 import { createAdminClient } from "../server";
+import { yelpAgentTask } from "@/trigger/yelpAgent";
 
 export type Message = {
   id: string;
@@ -19,7 +20,8 @@ export async function sendMessage(data: {
   text: string;
   roomId: string;
 }): Promise<
-  { error: false; message: Message } | { error: true; message: string }
+  | { error: false; message: Message; aiRunId?: string; aiToken?: string }
+  | { error: true; message: string }
 > {
   const user = await getCurrentUser();
   if (user == null) {
@@ -63,6 +65,22 @@ export async function sendMessage(data: {
     });
     return { error: true, message: "Failed to send message" };
   }
+  //Ai Trigger
+  let aiRunId: string | undefined;
+  let aiToken: string | undefined;
 
-  return { error: false, message };
+  if (data.text.toLowerCase().includes("@ai")) {
+    // Clean the prompt (remove "@ai")
+    const cleanPrompt = data.text.replace(/@ai/iy, "").trim();
+
+    // Trigger the background job ("Fire and Forget")
+    const handle = await yelpAgentTask.trigger({
+      roomId: data.roomId,
+      userQuery: cleanPrompt,
+    });
+    aiRunId = handle.id;
+    aiToken = handle.publicAccessToken;
+  }
+
+  return { error: false, message, aiRunId, aiToken };
 }

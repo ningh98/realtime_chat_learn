@@ -3,6 +3,7 @@ import { Message } from "@/services/supabase/actions/messages";
 import { User2Icon } from "lucide-react";
 import Image from "next/image";
 import { Ref } from "react";
+import Linkify from "linkify-react";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
   dateStyle: "short",
@@ -61,7 +62,16 @@ export function ChatMessage({
             {DATE_FORMATTER.format(new Date(created_at))}
           </span>
         </div>
-        <p className="text-sm wrap-break-words whitespace-pre">{text}</p>
+        <div className="text-sm wrap-break-words whitespace-pre-wrap">
+          <Linkify
+            options={{
+              target: "_blank",
+              className: "text-blue-500 underline hover:text-blue-600",
+            }}
+          >
+            {text}
+          </Linkify>
+        </div>
       </div>
     </div>
   );
